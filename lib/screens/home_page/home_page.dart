@@ -76,10 +76,16 @@ class _MyHomePageState extends State<MyHomePage> {
       'weather': 'icSnowy'
     },
   ];
+  Future<CurrentWeather> fetchData() async {
+    final weatherT = await HomeService.fetchWeather(lat, lon, units);
+    final currentWeather = weatherT["data"];
+    return currentWeather;
+  }
+
   @override
   void initState() {
     super.initState();
-    currentWeather = HomeService.fetchCurrentWeather(lat, lon, units);
+    currentWeather = fetchData();
   }
 
   @override
@@ -91,18 +97,18 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             FutureBuilder<CurrentWeather>(
               future: currentWeather,
-              builder: (context, curWearther) {
-                if (curWearther.hasData) {
-                  return buildBody(curWearther);
-                } else if (curWearther.hasError) {
-                  return Text('${curWearther.error}');
+              builder: (context, curWeather) {
+                if (curWeather.hasData) {
+                  return buildBody(curWeather);
+                } else if (curWeather.hasError) {
+                  return Text('${curWeather.error}');
                 }
 
                 // By default, show a loading spinner.
                 return const CircularProgressIndicator();
               },
             ),
-            buildWeek(),
+            buildDay(),
             collapse ? itemButton() : forecastsFor7Day()
           ],
         ),
@@ -432,7 +438,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget buildWeek() {
+  Widget buildDay() {
     return Container(
       color: AppColor.endGradient,
       child: Container(
