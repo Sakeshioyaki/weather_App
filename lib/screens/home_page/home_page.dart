@@ -23,7 +23,8 @@ class _MyHomePageState extends State<MyHomePage> {
   int mainLocation = 0;
   double lat = 21.0245;
   double lon = 105.8412;
-  late Future<CurrentWeather?> currentWeather;
+  String units = 'metric'; //imperial
+  late Future<CurrentWeather> currentWeather;
   List<Map> data7Day = [
     {
       'day': 'Sun',
@@ -78,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    currentWeather = HomeService.fetchCurrentWeather(lat, lon);
+    currentWeather = HomeService.fetchCurrentWeather(lat, lon, units);
   }
 
   @override
@@ -88,7 +89,19 @@ class _MyHomePageState extends State<MyHomePage> {
         bottom: false,
         child: Column(
           children: [
-            buildBody(),
+            FutureBuilder<CurrentWeather>(
+              future: currentWeather,
+              builder: (context, curWearther) {
+                if (curWearther.hasData) {
+                  return buildBody(curWearther);
+                } else if (curWearther.hasError) {
+                  return Text('${curWearther.error}');
+                }
+
+                // By default, show a loading spinner.
+                return const CircularProgressIndicator();
+              },
+            ),
             buildWeek(),
             collapse ? itemButton() : forecastsFor7Day()
           ],
@@ -193,7 +206,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget buildBody() {
+  Widget buildBody(AsyncSnapshot<CurrentWeather> curWearther) {
     List<int> indexs = [0, 1, 2];
     int index = 0;
     return Container(
@@ -217,8 +230,8 @@ class _MyHomePageState extends State<MyHomePage> {
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 15),
           child: collapse
-              ? columnContain(indexs, index)
-              : rowContain(indexs, index),
+              ? columnContain(indexs, index, curWearther)
+              : rowContain(indexs, index, curWearther),
         ),
         const SizedBox(height: 15),
         Container(
@@ -229,11 +242,12 @@ class _MyHomePageState extends State<MyHomePage> {
         const SizedBox(height: 10),
         Container(
           margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 30),
-          child: const DetailWeather(
-            windSpeed: 3.7,
+          child: DetailWeather(
+            units: units,
+            windSpeed: curWearther.data?.windSpeed ?? 0,
             chanceOfRain: 74,
-            pressure: 1010,
-            humidity: 83,
+            pressure: curWearther.data?.pressure ?? 0,
+            humidity: curWearther.data?.humidity ?? 0,
           ),
         ),
         const SizedBox(
@@ -243,7 +257,8 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget columnContain(List<int> indexs, int index) {
+  Widget columnContain(
+      List<int> indexs, int index, AsyncSnapshot<CurrentWeather> curWearther) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 5),
       child: Column(
@@ -278,9 +293,10 @@ class _MyHomePageState extends State<MyHomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '24',
+                curWearther.data?.temp.toString() ?? '',
                 style: AppTextStyle.tempText.copyWith(height: 1),
               ),
+              // units == 'metric' ?
               Image.asset(
                 AppImage.degree,
                 height: 10,
@@ -288,7 +304,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
           Text(
-            'Heavy rain',
+            curWearther.data?.weather?[0].main ?? '',
             style: AppTextStyle.normalText,
           ),
         ],
@@ -296,7 +312,8 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget rowContain(List<int> indexs, int index) {
+  Widget rowContain(
+      List<int> indexs, int index, AsyncSnapshot<CurrentWeather> curWearther) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 15),
       child: Row(
@@ -337,7 +354,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '24',
+                    curWearther.data?.temp.toString() ?? '',
                     style: AppTextStyle.tempText.copyWith(height: 1),
                   ),
                   Image.asset(
@@ -347,7 +364,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ],
               ),
               Text(
-                'Heavy rain',
+                curWearther.data?.weather?[0].main ?? '',
                 style: AppTextStyle.normalText,
               ),
             ],

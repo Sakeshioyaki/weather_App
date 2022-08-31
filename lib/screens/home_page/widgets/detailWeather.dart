@@ -3,17 +3,19 @@ import 'package:untitled/common/app_images.dart';
 import 'package:untitled/common/app_text_styles.dart';
 
 class DetailWeather extends StatefulWidget {
-  final double windSpeed;
-  final int chanceOfRain;
-  final int pressure;
-  final int humidity;
+  final num windSpeed;
+  final num chanceOfRain;
+  final num pressure;
+  final num humidity;
+  final String units;
 
   const DetailWeather(
       {Key? key,
       required this.windSpeed,
       required this.chanceOfRain,
       required this.pressure,
-      required this.humidity})
+      required this.humidity,
+      required this.units})
       : super(key: key);
 
   @override
@@ -86,7 +88,7 @@ class _DetailWeatherState extends State<DetailWeather> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '${widget.pressure} mbar',
+              '${widget.pressure} hPa',
               style: AppTextStyle.regularText,
             ),
             Text(
@@ -138,7 +140,9 @@ class _DetailWeatherState extends State<DetailWeather> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '${widget.windSpeed} km/h',
+              widget.units == 'imperial'
+                  ? '${widget.windSpeed} miles/h'
+                  : '${widget.windSpeed} m/s',
               style: AppTextStyle.regularText,
             ),
             Text(
