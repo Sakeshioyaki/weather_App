@@ -5,6 +5,7 @@ import 'package:untitled/common/app_images.dart';
 import 'package:untitled/common/app_text_styles.dart';
 import 'package:untitled/fetch_api/home_service.dart';
 import 'package:untitled/models/current_weather.dart';
+import 'package:untitled/models/day_weather.dart';
 import 'package:untitled/screens/manage_location/manage_location.dart';
 import 'package:untitled/screens/setting_page/setting_page.dart';
 
@@ -25,6 +26,7 @@ class _MyHomePageState extends State<MyHomePage> {
   double lon = 105.8412;
   String units = 'metric'; //imperial
   late Future<CurrentWeather> currentWeather;
+  late Future<List<DayWeather>> dayWeather;
   List<Map> data7Day = [
     {
       'day': 'Sun',
@@ -78,14 +80,15 @@ class _MyHomePageState extends State<MyHomePage> {
   ];
   Future<CurrentWeather> fetchData() async {
     final weatherT = await HomeService.fetchWeather(lat, lon, units);
-    final currentWeather = weatherT["data"];
+    currentWeather = weatherT["data"];
+    dayWeather = weatherT['dayData'];
     return currentWeather;
   }
 
   @override
   void initState() {
     super.initState();
-    currentWeather = fetchData();
+    fetchData();
   }
 
   @override
