@@ -4,9 +4,9 @@ import 'package:untitled/common/app_text_styles.dart';
 
 class WeatherForHour extends StatelessWidget {
   final String time;
-  final int maxTemp;
-  final int minTemp;
-  final int chanceOfRain;
+  final num maxTemp;
+  final num minTemp;
+  final num chanceOfRain;
   const WeatherForHour(
       {Key? key,
       required this.time,

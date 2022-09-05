@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 import 'package:untitled/common/app_colors.dart';
 import 'package:untitled/common/app_images.dart';
 import 'package:untitled/common/app_text_styles.dart';
 import 'package:untitled/fetch_api/home_service.dart';
-import 'package:untitled/models/current_weather.dart';
-import 'package:untitled/models/day_weather.dart';
+import 'package:untitled/models/one_call_api_weather.dart';
 import 'package:untitled/screens/manage_location/manage_location.dart';
 import 'package:untitled/screens/setting_page/setting_page.dart';
 
@@ -22,11 +23,13 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   bool collapse = true;
   int mainLocation = 0;
-  double lat = 21.0245;
-  double lon = 105.8412;
+  double lat = 48.853409;
+  double lon = 2.3488;
   String units = 'metric'; //imperial
-  late Future<CurrentWeather> currentWeather;
-  late Future<List<DayWeather>> dayWeather;
+  // DateTime curent
+  late DateTime currentTime;
+  late Future<OneCallAPIWeather> oneCallAPIWeather;
+  // late Future<List<DayWeather>> dayWeather;
   List<Map> data7Day = [
     {
       'day': 'Sun',
@@ -78,17 +81,23 @@ class _MyHomePageState extends State<MyHomePage> {
       'weather': 'icSnowy'
     },
   ];
-  Future<CurrentWeather> fetchData() async {
-    final weatherT = await HomeService.fetchWeather(lat, lon, units);
-    currentWeather = weatherT["data"];
-    dayWeather = weatherT['dayData'];
-    return currentWeather;
+  // Future<oneCallAPIWeather> fetchData() async {
+  //   final weatherT = await HomeService.fetchWeather(lat, lon, units);
+  //   oneCallAPIWeather =
+  //       oneCallAPIWeather.fromJson(weatherT["data"]) as Future<oneCallAPIWeather>;
+  //   dayWeather = weatherT['dayData'];
+  //   return oneCallAPIWeather;
+  // }
+
+  Future<void> setup() async {
+    tz.initializeTimeZones();
   }
 
   @override
   void initState() {
     super.initState();
-    fetchData();
+    oneCallAPIWeather = HomeService.fetchWeather(lat, lon, units);
+    // tz.initializeTimeZones();
   }
 
   @override
@@ -96,30 +105,30 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       body: SafeArea(
         bottom: false,
-        child: Column(
-          children: [
-            FutureBuilder<CurrentWeather>(
-              future: currentWeather,
-              builder: (context, curWeather) {
-                if (curWeather.hasData) {
-                  return buildBody(curWeather);
-                } else if (curWeather.hasError) {
-                  return Text('${curWeather.error}');
-                }
+        child: FutureBuilder<OneCallAPIWeather>(
+          future: oneCallAPIWeather,
+          builder: (context, weather) {
+            if (weather.hasData) {
+              return Column(
+                children: [
+                  buildBody(weather),
+                  buildDay(weather),
+                  collapse ? itemButton() : forecastsFor7Day(weather)
+                ],
+              );
+            } else if (weather.hasError) {
+              return Text('${weather.error}');
+            }
 
-                // By default, show a loading spinner.
-                return const CircularProgressIndicator();
-              },
-            ),
-            buildDay(),
-            collapse ? itemButton() : forecastsFor7Day()
-          ],
+            // By default, show a loading spinner.
+            return const CircularProgressIndicator();
+          },
         ),
       ),
     );
   }
 
-  Widget forecastsFor7Day() {
+  Widget forecastsFor7Day(AsyncSnapshot<OneCallAPIWeather> weather) {
     return Expanded(
       child: Container(
         margin: const EdgeInsets.only(top: 10),
@@ -131,7 +140,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 setState(() {
                   collapse = collapse ? false : true;
                 });
-                // final res = await HomeService.fetchCurrentWeather(lat, lon);
+                // final res = await HomeService.fetchoneCallAPIWeather(lat, lon);
                 // print('ddddddd   ${res?.humidity}');
               },
               child: Row(
@@ -149,7 +158,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             Expanded(
               child: ListView.builder(
-                  itemCount: data7Day.length,
+                  itemCount: 7,
                   scrollDirection: Axis.vertical,
                   itemBuilder: (context, index) {
                     return Container(
@@ -160,7 +169,13 @@ class _MyHomePageState extends State<MyHomePage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            data7Day[index]['day'],
+                            DateFormat('EEEE')
+                                .format(DateTime(
+                                    currentTime.year,
+                                    currentTime.month,
+                                    currentTime.day + index + 1,
+                                    currentTime.hour))
+                                .toString(),
                             style: AppTextStyle.mediumTextWhite,
                           ),
                           Row(
@@ -173,7 +188,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 width: 10,
                               ),
                               Text(
-                                '${data7Day[index]['chanceOfRain']}% rain',
+                                '${((weather.data?.daily?[index].pop ?? 0) * 100).toInt()} % rain',
                                 style: AppTextStyle.regularText,
                               ),
                             ],
@@ -183,7 +198,9 @@ class _MyHomePageState extends State<MyHomePage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                data7Day[index]['minTemp'].toString(),
+                                weather.data?.daily?[index].temp?.min
+                                        .toString() ??
+                                    '0',
                                 style: AppTextStyle.regularText,
                               ),
                               Image.asset(
@@ -195,7 +212,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                 style: AppTextStyle.regularText,
                               ),
                               Text(
-                                data7Day[index]['maxTemp'].toString(),
+                                weather.data?.daily?[index].temp?.max
+                                        .toString() ??
+                                    '0',
                                 style: AppTextStyle.regularText,
                               ),
                               Image.asset(
@@ -215,7 +234,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget buildBody(AsyncSnapshot<CurrentWeather> curWearther) {
+  Widget buildBody(AsyncSnapshot<OneCallAPIWeather> oneCallAPIWeather) {
     List<int> indexs = [0, 1, 2];
     int index = 0;
     return Container(
@@ -239,8 +258,8 @@ class _MyHomePageState extends State<MyHomePage> {
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 15),
           child: collapse
-              ? columnContain(indexs, index, curWearther)
-              : rowContain(indexs, index, curWearther),
+              ? columnContain(indexs, index, oneCallAPIWeather)
+              : rowContain(indexs, index, oneCallAPIWeather),
         ),
         const SizedBox(height: 15),
         Container(
@@ -253,10 +272,10 @@ class _MyHomePageState extends State<MyHomePage> {
           margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 30),
           child: DetailWeather(
             units: units,
-            windSpeed: curWearther.data?.windSpeed ?? 0,
+            windSpeed: oneCallAPIWeather.data?.current?.windSpeed ?? 0,
             chanceOfRain: 74,
-            pressure: curWearther.data?.pressure ?? 0,
-            humidity: curWearther.data?.humidity ?? 0,
+            pressure: oneCallAPIWeather.data?.current?.pressure ?? 0,
+            humidity: oneCallAPIWeather.data?.current?.humidity ?? 0,
           ),
         ),
         const SizedBox(
@@ -266,8 +285,8 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget columnContain(
-      List<int> indexs, int index, AsyncSnapshot<CurrentWeather> curWearther) {
+  Widget columnContain(List<int> indexs, int index,
+      AsyncSnapshot<OneCallAPIWeather> oneCallAPIWeather) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 5),
       child: Column(
@@ -302,7 +321,7 @@ class _MyHomePageState extends State<MyHomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                curWearther.data?.temp.toString() ?? '',
+                oneCallAPIWeather.data?.current?.temp.toString() ?? '',
                 style: AppTextStyle.tempText.copyWith(height: 1),
               ),
               // units == 'metric' ?
@@ -313,7 +332,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
           Text(
-            curWearther.data?.weather?[0].main ?? '',
+            oneCallAPIWeather.data?.current?.weather?[0].main ?? '',
             style: AppTextStyle.normalText,
           ),
         ],
@@ -321,8 +340,8 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget rowContain(
-      List<int> indexs, int index, AsyncSnapshot<CurrentWeather> curWearther) {
+  Widget rowContain(List<int> indexs, int index,
+      AsyncSnapshot<OneCallAPIWeather> oneCallAPIWeather) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 15),
       child: Row(
@@ -363,7 +382,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    curWearther.data?.temp.toString() ?? '',
+                    oneCallAPIWeather.data?.current?.temp.toString() ?? '',
                     style: AppTextStyle.tempText.copyWith(height: 1),
                   ),
                   Image.asset(
@@ -373,7 +392,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ],
               ),
               Text(
-                curWearther.data?.weather?[0].main ?? '',
+                oneCallAPIWeather.data?.current?.weather?[0].main ?? '',
                 style: AppTextStyle.normalText,
               ),
             ],
@@ -441,7 +460,12 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget buildDay() {
+  Widget buildDay(AsyncSnapshot<OneCallAPIWeather> weather) {
+    setup();
+    var detroit = tz.getLocation(weather.data?.timezone ?? 'Asia/Bangkok');
+    tz.setLocalLocation(detroit);
+    currentTime = tz.TZDateTime.now(detroit);
+
     return Container(
       color: AppColor.endGradient,
       child: Container(
@@ -471,17 +495,49 @@ class _MyHomePageState extends State<MyHomePage> {
             const SizedBox(height: 5),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: const [
+              children: [
                 WeatherForHour(
-                    time: 'Now', minTemp: 20, maxTemp: 24, chanceOfRain: 76),
+                    time: 'Now',
+                    minTemp: weather.data?.hourly?[0].temp ?? 0,
+                    maxTemp: weather.data?.hourly?[0].temp ?? 0,
+                    chanceOfRain:
+                        ((weather.data?.hourly?[0].pop ?? 0) * 100).toInt()),
                 WeatherForHour(
-                    time: '10:00', minTemp: 20, maxTemp: 24, chanceOfRain: 69),
+                    time: DateFormat.Hm()
+                        .format(DateTime(currentTime.year, currentTime.month,
+                            currentTime.day, currentTime.hour + 1))
+                        .toString(),
+                    minTemp: weather.data?.hourly?[0].temp ?? 0,
+                    maxTemp: weather.data?.hourly?[0].temp ?? 0,
+                    chanceOfRain:
+                        ((weather.data?.hourly?[1].pop ?? 0) * 100).toInt()),
                 WeatherForHour(
-                    time: '11:00', minTemp: 20, maxTemp: 24, chanceOfRain: 62),
+                    time: DateFormat.Hm()
+                        .format(DateTime(currentTime.year, currentTime.month,
+                            currentTime.day, currentTime.hour + 2))
+                        .toString(),
+                    minTemp: 20,
+                    maxTemp: 24,
+                    chanceOfRain:
+                        ((weather.data?.hourly?[2].pop ?? 0) * 100).toInt()),
                 WeatherForHour(
-                    time: '12:00', minTemp: 20, maxTemp: 24, chanceOfRain: 53),
+                    time: DateFormat.Hm()
+                        .format(DateTime(currentTime.year, currentTime.month,
+                            currentTime.day, currentTime.hour + 3))
+                        .toString(),
+                    minTemp: 20,
+                    maxTemp: 24,
+                    chanceOfRain:
+                        ((weather.data?.hourly?[3].pop ?? 0) * 100).toInt()),
                 WeatherForHour(
-                    time: '13:00', minTemp: 20, maxTemp: 24, chanceOfRain: 45),
+                    time: DateFormat.Hm()
+                        .format(DateTime(currentTime.year, currentTime.month,
+                            currentTime.day, currentTime.hour + 4))
+                        .toString(),
+                    minTemp: 20,
+                    maxTemp: 24,
+                    chanceOfRain:
+                        ((weather.data?.hourly?[4].pop ?? 0) * 100).toInt()),
               ],
             )
           ],
