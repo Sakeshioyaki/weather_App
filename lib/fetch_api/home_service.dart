@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:untitled/common/api_key.dart';
-import 'package:untitled/models/one_call_api_weather.dart';
+import 'package:untitled/models/json_annotation.dart';
 
 class HomeService {
   static Future<OneCallAPIWeather> fetchWeather(

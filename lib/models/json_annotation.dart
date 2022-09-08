@@ -1,4 +1,5 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:json_annotation/json_annotation.dart';
+import 'package:untitled/models/daily.dart';
 
 import 'current.dart';
 import 'hourly.dart';
@@ -36,5 +37,5 @@ class OneCallAPIWeather {
       _$OneCallAPIWeatherFromJson(json);
 
   /// Connect the generated [_$PersonToJson] function to the `toJson` method.
-  Map<String, dynamic> toJson() => _$OneCallAPIWeatherFromJson(this);
+  Map<String, dynamic> toJson() => _$OneCallAPIWeatherToJson(this);
 }

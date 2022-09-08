@@ -1,4 +1,6 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'feels_like.g.dart';
 
 @JsonSerializable()
 class FeelsLike {
@@ -14,5 +16,5 @@ class FeelsLike {
       _$FeelsLikeFromJson(json);
 
   /// Connect the generated .. function to the `toJson` method.
-  Map<String, dynamic> toJson() => _$FeelsLikeFromJson(this);
+  Map<String, dynamic> toJson() => _$FeelsLikeToJson(this);
 }

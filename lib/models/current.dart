@@ -1,5 +1,7 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:untitled/models/weather.dart';
+
+part 'current.g.dart';
 
 @JsonSerializable()
 class Current {
@@ -42,5 +44,5 @@ class Current {
       _$CurrentFromJson(json);
 
   /// Connect the generated [_$PersonToJson] function to the `toJson` method.
-  Map<String, dynamic> toJson() => _$CurrentFromJson(this);
+  Map<String, dynamic> toJson() => _$CurrentToJson(this);
 }

@@ -1,8 +1,9 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:json_annotation/json_annotation.dart';
+import 'package:untitled/models/feels_like.dart';
 import 'package:untitled/models/temp.dart';
 import 'package:untitled/models/weather.dart';
 
-import 'feels_like.dart';
+part 'daily.g.dart';
 
 @JsonSerializable()
 class Daily {
@@ -57,5 +58,5 @@ class Daily {
   factory Daily.fromJson(Map<String, dynamic> json) => _$DailyFromJson(json);
 
   /// Connect the generated .. function to the `toJson` method.
-  Map<String, dynamic> toJson() => _$DailyFromJson(this);
+  Map<String, dynamic> toJson() => _$DailyToJson(this);
 }
