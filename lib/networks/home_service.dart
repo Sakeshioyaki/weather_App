@@ -9,7 +9,7 @@ class HomeService {
   static Future<OneCallAPIWeather> fetchWeather(
       num lat, num lon, String units) async {
     final response = await http.get(Uri.parse(
-        'https://api.openweathermap.org/data/2.5/onecall?lat=$lat&lon=$lon&appid=${Key.keyAPI}&units=$units'));
+        'https://api.openweathermap.org/data/2.5/onecall?lat=$lat&lon=$lon&appid=${ApiKey.keyAPI}&units=$units'));
 
     if (response.statusCode == 200) {
       OneCallAPIWeather data =

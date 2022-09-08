@@ -1,12 +1,14 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:untitled/common/api_key.dart';
 import 'package:untitled/common/app_colors.dart';
 import 'package:untitled/common/app_images.dart';
 import 'package:untitled/common/app_text_styles.dart';
-import 'package:untitled/fetch_api/home_service.dart';
-import 'package:untitled/models/one_call_api_weather.dart';
+import 'package:untitled/models/json_annotation.dart';
+import 'package:untitled/networks/api_client.dart';
 import 'package:untitled/screens/manage_location/manage_location.dart';
 import 'package:untitled/screens/setting_page/setting_page.dart';
 
@@ -23,80 +25,29 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   bool collapse = true;
   int mainLocation = 0;
-  double lat = 48.853409;
-  double lon = 2.3488;
+  num lat = 48.853409;
+  num lon = 2.3488;
   String units = 'metric'; //imperial
+  late ApiClient apiClient;
   // DateTime curent
   late DateTime currentTime;
   late Future<OneCallAPIWeather> oneCallAPIWeather;
-  // late Future<List<DayWeather>> dayWeather;
-  List<Map> data7Day = [
-    {
-      'day': 'Sun',
-      'chanceOfRain': 13,
-      'maxTemp': 24,
-      'minTemp': 20,
-      'weather': 'icSunRainDay',
-    },
-    {
-      'day': 'Mon',
-      'chanceOfRain': 32,
-      'maxTemp': 24,
-      'minTemp': 20,
-      'weather': 'icSnowy',
-    },
-    {
-      'day': 'Tues',
-      'chanceOfRain': 55,
-      'maxTemp': 24,
-      'minTemp': 20,
-      'weather': 'icSunRainDay',
-    },
-    {
-      'day': 'Wed',
-      'chanceOfRain': 60,
-      'maxTemp': 24,
-      'minTemp': 20,
-      'weather': 'icSnowy',
-    },
-    {
-      'day': 'Thu',
-      'chanceOfRain': 70,
-      'maxTemp': 24,
-      'minTemp': 20,
-      'weather': 'icSnowy',
-    },
-    {
-      'day': 'Fri',
-      'chanceOfRain': 99,
-      'maxTemp': 24,
-      'minTemp': 20,
-      'weather': 'icSnowy',
-    },
-    {
-      'day': 'Sat',
-      'chanceOfRain': 60,
-      'maxTemp': 24,
-      'minTemp': 20,
-      'weather': 'icSnowy'
-    },
-  ];
-  // Future<oneCallAPIWeather> fetchData() async {
-  //   final weatherT = await HomeService.fetchWeather(lat, lon, units);
-  //   oneCallAPIWeather =
-  //       oneCallAPIWeather.fromJson(weatherT["data"]) as Future<oneCallAPIWeather>;
-  //   dayWeather = weatherT['dayData'];
-  //   return oneCallAPIWeather;
-  // }
+  final client = ApiClient(Dio(BaseOptions(contentType: "application/json")));
 
   Future<void> setup() async {
     tz.initializeTimeZones();
   }
 
+  Future<OneCallAPIWeather> getAPIWeather() async {
+    return apiClient.getOneCallAPIWeather(lat, lon,
+        units: units, appid: ApiKey.keyAPI);
+  }
+
   @override
   void initState() {
     super.initState();
-    oneCallAPIWeather = HomeService.fetchWeather(lat, lon, units);
+    oneCallAPIWeather = apiClient.getOneCallAPIWeather(lat, lon,
+        units: units, appid: ApiKey.keyAPI);
     // tz.initializeTimeZones();
   }
 
