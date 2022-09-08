@@ -13,81 +13,25 @@ import 'package:untitled/screens/setting_page/setting_page.dart';
 import 'widgets/detailWeather.dart';
 import 'widgets/weatherForHour.dart';
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key}) : super(key: key);
+class MainPage extends StatefulWidget {
+  final double lat;
+  final double lon;
+  final String units;
+  const MainPage(
+      {Key? key, required this.lat, required this.lon, required this.units})
+      : super(key: key);
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<MainPage> createState() => _MainPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MainPageState extends State<MainPage> {
   bool collapse = true;
   int mainLocation = 0;
-  double lat = 48.853409;
-  double lon = 2.3488;
-  String units = 'metric'; //imperial
+
   // DateTime curent
   late DateTime currentTime;
   late Future<OneCallAPIWeather> oneCallAPIWeather;
-  // late Future<List<DayWeather>> dayWeather;
-  List<Map> data7Day = [
-    {
-      'day': 'Sun',
-      'chanceOfRain': 13,
-      'maxTemp': 24,
-      'minTemp': 20,
-      'weather': 'icSunRainDay',
-    },
-    {
-      'day': 'Mon',
-      'chanceOfRain': 32,
-      'maxTemp': 24,
-      'minTemp': 20,
-      'weather': 'icSnowy',
-    },
-    {
-      'day': 'Tues',
-      'chanceOfRain': 55,
-      'maxTemp': 24,
-      'minTemp': 20,
-      'weather': 'icSunRainDay',
-    },
-    {
-      'day': 'Wed',
-      'chanceOfRain': 60,
-      'maxTemp': 24,
-      'minTemp': 20,
-      'weather': 'icSnowy',
-    },
-    {
-      'day': 'Thu',
-      'chanceOfRain': 70,
-      'maxTemp': 24,
-      'minTemp': 20,
-      'weather': 'icSnowy',
-    },
-    {
-      'day': 'Fri',
-      'chanceOfRain': 99,
-      'maxTemp': 24,
-      'minTemp': 20,
-      'weather': 'icSnowy',
-    },
-    {
-      'day': 'Sat',
-      'chanceOfRain': 60,
-      'maxTemp': 24,
-      'minTemp': 20,
-      'weather': 'icSnowy'
-    },
-  ];
-  // Future<oneCallAPIWeather> fetchData() async {
-  //   final weatherT = await HomeService.fetchWeather(lat, lon, units);
-  //   oneCallAPIWeather =
-  //       oneCallAPIWeather.fromJson(weatherT["data"]) as Future<oneCallAPIWeather>;
-  //   dayWeather = weatherT['dayData'];
-  //   return oneCallAPIWeather;
-  // }
 
   Future<void> setup() async {
     tz.initializeTimeZones();
@@ -96,7 +40,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    oneCallAPIWeather = HomeService.fetchWeather(lat, lon, units);
+    oneCallAPIWeather =
+        HomeService.fetchWeather(widget.lat, widget.lon, widget.units);
     // tz.initializeTimeZones();
   }
 
@@ -140,8 +85,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 setState(() {
                   collapse = collapse ? false : true;
                 });
-                // final res = await HomeService.fetchoneCallAPIWeather(lat, lon);
-                // print('ddddddd   ${res?.humidity}');
               },
               child: Row(
                 children: [
@@ -271,7 +214,7 @@ class _MyHomePageState extends State<MyHomePage> {
         Container(
           margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 30),
           child: DetailWeather(
-            units: units,
+            units: widget.units,
             windSpeed: oneCallAPIWeather.data?.current?.windSpeed ?? 0,
             chanceOfRain: 74,
             pressure: oneCallAPIWeather.data?.current?.pressure ?? 0,
