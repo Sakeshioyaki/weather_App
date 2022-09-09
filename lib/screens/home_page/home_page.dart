@@ -28,7 +28,8 @@ class _MyHomePageState extends State<MyHomePage> {
   num lat = 48.853409;
   num lon = 2.3488;
   String units = 'metric'; //imperial
-  late ApiClient apiClient;
+  final dio = Dio();
+  // late ApiClient apiClient = ApiClient(dio);
   // DateTime curent
   late DateTime currentTime;
   late Future<OneCallAPIWeather> oneCallAPIWeather;
@@ -36,18 +37,18 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> setup() async {
     tz.initializeTimeZones();
+    // apiClient = ApiClient(dio);
   }
 
   Future<OneCallAPIWeather> getAPIWeather() async {
-    return apiClient.getOneCallAPIWeather(lat, lon,
+    return client.getOneCallAPIWeather(lat, lon,
         units: units, appid: ApiKey.keyAPI);
   }
 
   @override
   void initState() {
     super.initState();
-    oneCallAPIWeather = apiClient.getOneCallAPIWeather(lat, lon,
-        units: units, appid: ApiKey.keyAPI);
+    final weatherRepo = RepositoryProvider.of<MovieRepository>(context);
     // tz.initializeTimeZones();
   }
 
