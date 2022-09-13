@@ -1,14 +1,15 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:untitled/common/api_key.dart';
 import 'package:untitled/common/app_colors.dart';
 import 'package:untitled/common/app_images.dart';
 import 'package:untitled/common/app_text_styles.dart';
 import 'package:untitled/models/json_annotation.dart';
 import 'package:untitled/networks/api_client.dart';
+import 'package:untitled/reponsitories/weather_reponsitory.dart';
 import 'package:untitled/screens/manage_location/manage_location.dart';
 import 'package:untitled/screens/setting_page/setting_page.dart';
 
@@ -40,15 +41,12 @@ class _MyHomePageState extends State<MyHomePage> {
     // apiClient = ApiClient(dio);
   }
 
-  Future<OneCallAPIWeather> getAPIWeather() async {
-    return client.getOneCallAPIWeather(lat, lon,
-        units: units, appid: ApiKey.keyAPI);
-  }
-
   @override
   void initState() {
     super.initState();
-    final weatherRepo = RepositoryProvider.of<MovieRepository>(context);
+    final weatherRepo = RepositoryProvider.of<WeatherRepository>(context);
+    oneCallAPIWeather =
+        weatherRepo.getWeather(lat: lat, lon: lon, units: units);
     // tz.initializeTimeZones();
   }
 

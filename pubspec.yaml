@@ -46,6 +46,7 @@ dependencies:
   json_annotation: ^4.6.0
   build_runner: ^2.2.0
   flutter_bloc: ^8.0.1
+  get: ^4.6.5
 
 
 dev_dependencies:

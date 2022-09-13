@@ -9,11 +9,10 @@ abstract class ApiClient {
   factory ApiClient(Dio dio, {String baseUrl}) = _ApiClient;
 
   /// weather
-  @GET("data/onecall")
-  Future<OneCallAPIWeather> getOneCallAPIWeather(
-      @Query('lat') num lat, @Query('lon') num lon,
-      {@Query('appid') String? appid,
-      @Query('units') String? units,
+  @GET("/data/2.5/onecall")
+  Future<OneCallAPIWeather> getOneCallAPIWeather(@Query('lat') num lat,
+      @Query('lon') num lon, @Query('appid') String? appid,
+      {@Query('units') String? units,
       @Query('lang') String? lang,
       @Query('exclude') String? exclude});
 }
